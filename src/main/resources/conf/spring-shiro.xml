@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	 http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	  http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	<!-- 启用shrio授权注解拦截方式 -->
+	<bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+		<!-- 装配 securityManager -->
+		<property name="securityManager" ref="securityManager" />
+		<!-- 配置登陆页面 -->
+		<property name="loginUrl" value="logins" />
+		<!-- 登陆成功后的一面 -->
+		<property name="successUrl" value="index" />
+		<property name="unauthorizedUrl" value="403" />
+		<!-- 具体配置需要拦截哪些 URL, 以及访问对应的 URL 时使用 Shiro 的什么 Filter 进行拦截. -->
+		<property name="filterChainDefinitionMap" ref="chainDefinitionSectionMetaSource"/>
+	</bean>
+	<bean id="sysPermissionInitService" class="com.books.service.SysPermissionInitService" />
+	<bean id="chainDefinitionSectionMetaSource" class="com.books.shiro.ChainDefinitionSectionMetaSource">
+		<property name="sysPermissionInitService" ref="sysPermissionInitService"></property>
+		<property name="filterChainDefinitions">
+			<value>
+				/login = authc
+				/logout = logout
+			</value>
+		</property>
+	</bean>
+	<!-- 配置缓存管理器 -->
+	<bean id="cacheManager" class="org.apache.shiro.cache.MemoryConstrainedCacheManager"/>
+	<bean id="sysUserService" class="com.books.service.SysUserService" />
+	<bean id="sysRoleService" class="com.books.service.SysRoleService" />
+	<bean id="sysPermissionService" class="com.books.service.SysPermissionService" />
+	<!-- 配置进行授权和认证的 Realm -->
+	<bean id="myRealm" class="com.books.shiro.MyShiroRealm" >
+		<property name="sysUserService" ref="sysUserService"></property>
+		<property name="sysRoleService" ref="sysRoleService"></property>
+		<property name="sysPermissionService" ref="sysPermissionService"></property>
+	</bean>
+	<!-- 配置 Shiro 的 SecurityManager Bean. -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+		<property name="cacheManager" ref="cacheManager" />
+		<property name="realm" ref="myRealm" />
+		<property name="sessionMode" value="native">
+		</property>
+	</bean>
+	<!-- 配置 Bean 后置处理器: 会自动的调用和 Spring 整合后各个组件的生命周期方法. -->
+	<bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+</beans>
