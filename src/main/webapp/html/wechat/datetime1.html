@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="msapplication-tap-highlight" content="no">
+<meta name="viewport"
+	content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+<link rel="stylesheet" href="css/style.css">
+<title>选择时间</title>
+</head>
+
+<body>
+	<div class="date_main_row2">
+			<div class="date_main_week">日</div>
+			<div class="date_main_week">一</div>
+			<div class="date_main_week">二</div>
+			<div class="date_main_week">三</div>
+			<div class="date_main_week">四</div>
+			<div class="date_main_week">五</div>
+			<div class="date_main_week">六</div>
+	</div>
+	<div class="date_main2">
+		
+	</div>
+	<div class="date_choicetime">
+		<div class="date_timeRow">
+			<div class="date_row"><div class="com_floatLeft date_hour date_houradd" id="date_hour1">01时</div><div class="com_floatRight date_minutes date_minutesadd" id="date_minute1">01分</div></div>
+			<div class="date_row1"><div class="com_floatLeft date_hour date_houradd" id="date_hour2">01时</div><div class="com_floatRight date_minutes date_minutesadd" id="date_minute2">01分</div></div>
+			<div class="date_row2"><div class="com_floatLeft date_hour" id="date_hourSelect">01时</div><div class="com_floatRight date_minutes" id="date_minuteSelect">01分</div></div>
+			<div class="date_row1"><div class="com_floatLeft date_hour date_hourreduce" id="date_hour3">01时</div><div class="com_floatRight date_minutes date_minutesreduce" id="date_minute3">01分</div></div>
+			<div class="date_row"><div class="com_floatLeft date_hour date_hourreduce" id="date_hour4">01时</div><div class="com_floatRight date_minutes date_minutesreduce" id="date_minute4">01分</div></div>
+		</div>
+		<div class="date_choiceRow2"><div class="com_halfBtn2 date_choiceBtn">确认添加</div></div>
+	</div>
+	<script type="text/javascript" src="js/jquery-1.8.2.min.js"></script>
+	<script type="text/javascript" src="js/jquery.timers-1.2.js"></script>
+	<script type="text/javascript" src="js/sd.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			var nowYear=new Date().getFullYear();
+			var nowMonth=new Date().getMonth()+1;
+			var nowMinutes=new Date().getMinutes();
+			var nowHours=new Date().getHours()
+			DATE.setDateTime($('.date_main2'),nowYear,nowMonth);
+			for(var i=0;i<11;i++){
+				if(nowMonth==12){
+					nowMonth=1;
+					nowYear+=1;
+				}else{
+					nowMonth+=1;
+				}
+				DATE.setDateTime($('.date_main2'),nowYear,nowMonth);
+			}
+			$('.date_day_choice').click(function(){
+				$('.date_day_choice').removeClass('date_dayselect');
+				$('.date_day_choice').addClass('date_daychoice');
+				$('.date_day_choice').attr('d','0');
+				if($(this).attr('d')=='0'){
+					$(this).removeClass('date_daychoice');
+					$(this).addClass('date_dayselect');
+					$(this).attr('d','2');
+				}
+			});
+			$('.date_choiceBtn').click(function(){
+				window.location.href="addUser.html";
+			});
+			setTime(nowHours,nowMinutes,1);
+			setTime(nowHours,nowMinutes,2);
+			$('.date_houradd').click(function(){
+				if(nowHours==0){
+					nowHours=23;
+				}else{
+					nowHours-=1;
+				}
+				setTime(nowHours,nowMinutes,1);
+			});
+			$('.date_hourreduce').click(function(){
+				if(nowHours==23){
+					nowHours=0;
+				}else{
+					nowHours+=1;
+				}
+				setTime(nowHours,nowMinutes,1);
+			});
+			$('.date_minutesadd').click(function(){
+				if(nowMinutes==0){
+					nowMinutes=59;
+				}else{
+					nowMinutes-=1;
+				}
+				setTime(nowHours,nowMinutes,2);
+			});
+			$('.date_minutesreduce').click(function(){
+				if(nowMinutes==59){
+					nowMinutes=0;
+				}else{
+					nowMinutes+=1;
+				}
+				setTime(nowHours,nowMinutes,2);
+			});
+		});
+		function setTime(nowHours,nowMinutes,type){
+			if(type==1){
+				$('#date_hourSelect').text((nowHours<10?('0'+nowHours):nowHours)+'时');
+				if(nowHours==0){
+					$('#date_hour1').text('22时');
+					$('#date_hour2').text('23时');
+					$('#date_hour3').text('01时');
+					$('#date_hour4').text('02时');
+				}else if(nowHours==1){
+					$('#date_hour1').text('23时');
+					$('#date_hour2').text('00时');
+					$('#date_hour3').text('02时');
+					$('#date_hour4').text('03时');
+				}else if(nowHours==23){
+					$('#date_hour1').text((nowHours-2)+'时');
+					$('#date_hour2').text((nowHours-1)+'时');
+					$('#date_hour3').text('00时');
+					$('#date_hour4').text('01时');
+				}else if(nowHours==22){
+					$('#date_hour1').text((nowHours-2)+'时');
+					$('#date_hour2').text((nowHours-1)+'时');
+					$('#date_hour3').text('23时');
+					$('#date_hour4').text('00时');
+				}else{
+					$('#date_hour1').text(((nowHours-2)<10?('0'+(nowHours-2)):(nowHours-2))+'时');
+					$('#date_hour2').text(((nowHours-1)<10?('0'+(nowHours-1)):(nowHours-1))+'时');
+					$('#date_hour3').text(((nowHours+1)<10?('0'+(nowHours+1)):(nowHours+1))+'时');
+					$('#date_hour4').text(((nowHours+2)<10?('0'+(nowHours+2)):(nowHours+2))+'时');
+				}
+			}else{
+				$('#date_minuteSelect').text((nowMinutes<10?('0'+nowMinutes):nowMinutes)+'分');
+				if(nowMinutes==0){
+					$('#date_minute1').text('58分');
+					$('#date_minute2').text('59分');
+					$('#date_minute3').text('01分');
+					$('#date_minute4').text('02分');
+				}else if(nowMinutes==1){
+					$('#date_minute1').text('59分');
+					$('#date_minute2').text('00分');
+					$('#date_minute3').text('02分');
+					$('#date_minute4').text('03分');
+				}else if(nowMinutes==59){
+					$('#date_minute1').text((nowMinutes-2)+'分');
+					$('#date_minute2').text((nowMinutes-1)+'分');
+					$('#date_minute3').text('00分');
+					$('#date_minute4').text('01分');
+				}else if(nowMinutes==58){
+					$('#date_minute1').text((nowMinutes-2)+'分');
+					$('#date_minute2').text((nowMinutes-1)+'分');
+					$('#date_minute3').text('59分');
+					$('#date_minute4').text('00分');
+				}else{
+					$('#date_minute1').text(((nowMinutes-2)<10?('0'+(nowMinutes-2)):(nowMinutes-2))+'分');
+					$('#date_minute2').text(((nowMinutes-1)<10?('0'+(nowMinutes-1)):(nowMinutes-1))+'分');
+					$('#date_minute3').text(((nowMinutes+1)<10?('0'+(nowMinutes+1)):(nowMinutes+1))+'分');
+					$('#date_minute4').text(((nowMinutes+2)<10?('0'+(nowMinutes+2)):(nowMinutes+2))+'分');
+				}
+			}
+		}
+	</script>
+</body>
+</html>
