@@ -163,7 +163,7 @@
 			});
 	
 			$('#date_hourSelect').bind({
-				'touchend touchcancel mouseup' : function(){
+				'touchend touchcancel mouseup scrollstop' : function(){
 					var x=$(this).scrollTop()/24;
 					if(($(this).scrollTop()%24) != 0){
 						if($(this).scrollTop()%24>12){
@@ -183,8 +183,9 @@
 					}
 				}
 			});
+			
 			$('#date_minuteSelect').bind({
-				'touchend touchcancel mouseup' : function(){
+				'touchend touchcancel mouseup scrollstop' : function(){
 					var x=$(this).scrollTop()/24;
 					if(($(this).scrollTop()%24) != 0){
 						if($(this).scrollTop()%24>12){

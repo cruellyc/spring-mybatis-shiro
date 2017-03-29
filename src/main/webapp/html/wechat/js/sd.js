@@ -72,7 +72,56 @@ if(window.swaf){
 		return week;
 	};
 }());
-
+/*滚动事件*/
+(function(){
+    var special = jQuery.event.special,
+        uid1 = 'D' + (+new Date()),
+        uid2 = 'D' + (+new Date() + 1);
+    special.scrollstart = {
+        setup: function() {
+            var timer,
+                handler =  function(evt) {
+                    var _self = this,
+                        _args = arguments;
+                    if (timer) {
+                        clearTimeout(timer);
+                    } else {
+                        evt.type = 'scrollstart';
+                        jQuery.event.handle.apply(_self, _args);
+                    }
+                    timer = setTimeout( function(){
+                        timer = null;
+                    }, special.scrollstop.latency);
+                };
+            jQuery(this).bind('scroll', handler).data(uid1, handler);
+        },
+        teardown: function(){
+            jQuery(this).unbind( 'scroll', jQuery(this).data(uid1) );
+        }
+    };
+    special.scrollstop = {
+        latency: 300,
+        setup: function() {
+            var timer,
+                    handler = function(evt) {
+                    var _self = this,
+                        _args = arguments;
+                    if (timer) {
+                        clearTimeout(timer);
+                    }
+                    timer = setTimeout( function(){
+                        timer = null;
+                        evt.type = 'scrollstop';
+                        jQuery.event.handle.apply(_self, _args);
+                    }, special.scrollstop.latency);
+                };
+            jQuery(this).bind('scroll', handler).data(uid2, handler);
+        },
+        teardown: function() {
+            jQuery(this).unbind( 'scroll', jQuery(this).data(uid2) );
+        }
+    };
+})();
 /*=======================*/
 
 SD = {};
@@ -120,50 +169,81 @@ SD.countDown = function(el,v,f){
 /**
  * 在屏幕上显示一条消息，持续3秒
  */
-SD.toast = function(s){
-	SD.hideLoad();
+SD.toast = function(s,f){
     var v =
-        '<div class="sdtoast" style="display:none;position:fixed;z-index:2000;left:0;right:0;bottom:20px;height:100px;text-align:center;">' +
-        '<div style="display:inline-block;padding:4px 8px;border-radius:3px;background-color:#555;color:white;font-size:12px;">' + s +
+        '<div class="sdtoast" style="position:fixed;opacity:0.8;background-color:#000;border-radius:10px;z-index:2000;left:20%;right:20%;top:200px;width:60%;height:135px;text-align:center;">' +
+        '<div style="padding-top:20px;"><img src="./images/sd_info.png"></div>'+
+        '<div style="display:inline-block;padding:4px 8px;color:white;font-size:16px;margin-top:10px;">' + s +
         '</div></div>';
     $(v).appendTo('body').fadeIn().oneTime('1.5s', function(){
         $('.sdtoast').fadeOut(function(){
             $('.sdtoast').remove();
+            if(f){
+            	f();
+            }
         });
     });
 };
-
-SD.showLoad=function(){
-	var s ='<div class="showLoad">'+
-		'<div class="loading_data loadIng"><div id="load_gif"><img src="img/loading3.gif" /></div><div id="pic_alt" class="pic_alt">加载中...</div></div>'+
-		'</div>';
-	$('body').append(s);
-	$('.loadIng').show();
+SD.toastSuc = function(s,f){
+    var v =
+        '<div class="sdtoast" style="display:inline-block;position:fixed;opacity:0.8;background-color:#000;border-radius:10px;z-index:2000;left:20%;right:20%;top:200px;width:60%;height:135px;text-align:center;">' +
+        '<div style="padding-top:20px;"><img src="./images/sd_success.png"></div>'+
+        '<div style="display:inline-block;padding:4px 8px;color:white;font-size:16px;margin-top:10px;">' + s +
+        '</div></div>';
+    $(v).appendTo('body').fadeIn().oneTime('1s', function(){
+        $('.sdtoast').fadeOut(function(){
+            $('.sdtoast').remove();
+            if(f){
+            	f();
+            }
+        });
+    });
 };
-SD.hideLoad=function(){
-	$('.showLoad').remove();
+SD.toastOpen = function(s,f){
+    var v =
+        '<div class="sdtoast" style="position:fixed;opacity:0.8;background-color:#000;border-radius:10px;z-index:2000;left:20%;right:20%;top:200px;width:60%;height:135px;text-align:center;">' +
+        '<div style="padding-top:20px;"><img src="./images/sd_openDoor.png" width="35px"></div>'+
+        '<div style="display:inline-block;padding:4px 8px;color:white;font-size:16px;margin-top:10px;">' + s +
+        '</div></div>';
+    $(v).appendTo('body').fadeIn().oneTime('1.5s', function(){
+        $('.sdtoast').fadeOut(function(){
+            $('.sdtoast').remove();
+            if(f){
+            	f();
+            }
+        });
+    });
 };
+/*随机数*/
+SD.random=function(n){
+	var s="";
+	for(var i=0;i<n;i++){
+		var num=parseInt(10*Math.random());
+		s+=num+'';
+	}
+	return s;
+}
 
 //判断提示对话框
-SD.confirme=function(f,ff){
+SD.confirme=function(t,s,ff,good,cann,cf){
     var str ='<div class="confirme">'+
         '<div class="confirmeWin">'+
-        '    <div class="contents">'+f+'</div>'+
+        '    <div class="tit">'+t+'</div>'+
+        '    <div class="contents">'+s+'</div>'+
         '    <div class="bottom">'+
-        '        <div class="cancel"><div class="cann">取消</div></div>'+
-        '        <div class="good">确定</div>'+
+        '        <div class="cancel"><div class="cann">'+(cann?cann:'取消')+'</div></div>'+
+        '        <div class="good">'+(good?good:'确定')+'</div>'+
         '    </div>'+
         '</div>'+
         '<div class="confirmeBg"></div>'+
         '</div>';
     $('body').append(str);
     //取消
-    SD.fastClick(".cancel","#e1e1e1");
     $('.cancel').on("click",function(){
         $('.confirme').remove();
+        if(cf) cf();
     });
     //好
-    SD.fastClick(".good","#e1e1e1");
     $('.good').on("click",function(){
         $('.confirme').remove();
         if(ff) ff();
@@ -171,7 +251,7 @@ SD.confirme=function(f,ff){
 };
 
 DATE={};
-DATE.setDateTime=function(e,year,month){
+DATE.setDateTime=function(e,year,month,t){
 	var str=year+"/"+month+"/1";
 	var oneday=new Date(str);
 	var dayNum=0;
@@ -201,12 +281,22 @@ DATE.setDateTime=function(e,year,month){
 			}
 		}
 		if(nowYear==year && (nowMonth+1)==month){
-			if(i==nowDate){
-				s+='<div class="date_main_day"><div class="date_day_datetime date_day_choice date_dayselect" d="0">'+i+'</div></div>';
-			}else if(i<nowDate){
-				s+='<div class="date_main_day"><div class="date_day_datetime">'+i+'</div></div>';
+			if(t){
+				if(i==nowDate){
+					s+='<div class="date_main_day"><div class="date_day_datetime date_day_choice date_dayselect" d="0">'+i+'</div></div>';
+				}else if(i>nowDate){
+					s+='<div class="date_main_day"><div class="date_day_datetime">'+i+'</div></div>';
+				}else{
+					s+='<div class="date_main_day"><div class="date_day_datetime date_day_choice date_daychoice" d="0">'+i+'</div></div>';
+				}
 			}else{
-				s+='<div class="date_main_day"><div class="date_day_datetime date_day_choice date_daychoice" d="0">'+i+'</div></div>';
+				if(i==nowDate){
+					s+='<div class="date_main_day"><div class="date_day_datetime date_day_choice date_dayselect" d="0">'+i+'</div></div>';
+				}else if(i<nowDate){
+					s+='<div class="date_main_day"><div class="date_day_datetime">'+i+'</div></div>';
+				}else{
+					s+='<div class="date_main_day"><div class="date_day_datetime date_day_choice date_daychoice" d="0">'+i+'</div></div>';
+				}
 			}
 		}else{
 			s+='<div class="date_main_day"><div class="date_day_datetime date_day_choice date_daychoice" d="0">'+i+'</div></div>';
@@ -221,4 +311,21 @@ DATE.setDateTime=function(e,year,month){
 	s+='</div>';
 	$(e).append(s);
 };
+SD.popstate=function(f,p){
+	if(p){
+		SD.pushHistory();
+	}
+	window.addEventListener("popstate", function(e) {
+		//alert("sfd");
+		if(f) f();
+		}, false);
+}
+
+SD.pushHistory =function() {
+	var state = {
+			title: "title",
+			url: "#"
+	};
+	window.history.pushState(state, "title", "#");
+}
 
